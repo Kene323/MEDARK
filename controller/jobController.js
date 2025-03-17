@@ -1,67 +1,130 @@
-const jobModel = require("../model/jobModel.js")
+const Job = require("../model/JobsModel");
+const Hospital = require("../model/hospitalModel");
+// const cloudinary = require("../config/cloudinary");
 
-// CREATE JOB FORM
-const createJob = async (req, res) => {
-    try {
-        const {
-            hospitalName,
-            location,
-            contactName,
-            email,
-            phoneNo,
-            jobDetails,
-            jobTitle,
-            jobType,
-            shiftType,
-            jobDescription,
-            jobRequirements,
-            requiredCertifications,
-            applicationDeadline
-        } = req.body
 
-        const post = await jobModel.create()
+/**
+ * @desc Create a new job posting
+ * @route POST /api/jobs
+ * @access Private (Hospital Only)
+ */
+exports.createJob = async (req, res) => {
+  try {
+    const { title, description, requirements, targetProfession, location, jobType } = req.body;
 
-    } catch(error) {
-        res.status(500).json({ERROR: error.message})
+    // Ensure the hospital exists
+    const hospital = await Hospital.findById(req.user.id);
+    if (!hospital) {
+      return res.status(404).json({ message: "Hospital not found" });
     }
-}
 
-// GET A  JOB
-const getOneJob = async (req, res) => {
+    // Handle logo upload (if provided)
+    const logo = req.file ? req.file.path : hospital.logo;
+
+    // Create job
+    const newJob = new Job({
+      hospital: hospital._id,
+      title,
+      description,
+      requirements,
+      targetProfession,
+      location,
+      logo,
+      jobType
+    });
+
+    // Save job to database
+    await newJob.save();
+
+    // Push job to the hospital's jobs array
+    hospital.jobs.push(newJob._id);
+    await hospital.save();
+
+    res.status(201).json({
+      message: "Job created successfully",
+      data: newJob
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error creating job", error });
+  }
+};
+
+/**
+ * @desc Upload Hospital Logo
+ * @route POST /api/hospitals/upload-logo
+ * @access Private (Hospital Admin)
+ */
+exports.uploadHospitalLogo = async (req, res) => {
     try {
-
-    } catch(err) {
-        res.status(500).json({ERROR: error.message})
-    }
-}
-
-// GET ALL JOBS
-const getAllJobs = async (req, res) => {
-    try{ 
-
-    } catch(error) {
-        res.status(500).json({ERROR: error.message})
-    }
-}
-
-// UPDATE A JOB
-
-const updateJob = async (req, res) => {
-    try {
-
-    } catch(error) {
-        res.status(500).json({ERROR: error.message})
-    }
-}
-
-// DELETE A JOB
-
-const deleteJob = async (req, res) => {
-    try {
-
+      const { hospitalId } = req.body;
+  
+      // Check if hospital exists
+      const hospital = await Hospital.findById(hospitalId);
+      if (!hospital) return res.status(404).json({ message: "Hospital not found" });
+  
+      // Check if file was uploaded
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+  
+      // Upload to Cloudinary
+      const imageUrl = req.file.path; // Cloudinary URL
+      hospital.logo = imageUrl;
+      await hospital.save();
+  
+      res.json({ message: "Hospital logo uploaded successfully", imageUrl });
     } catch (error) {
-        res.status(500).json({ERROR: error.message})
+      res.status(500).json({ message: "Error uploading hospital logo", error });
     }
-}
+  };
+    
 
-module.exports = {createJob, getAllJobs, getOneJob, updateJob, deleteJob}
+exports.getAllJobs = async (req, res) => {
+  try {
+    const jobs = await Job.find().populate("hospital", "name logo location");
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching jobs", error });
+  }
+};
+
+exports.getJobById = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.jobId).populate("hospital", "name logo location");
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching job", error });
+  }
+};
+
+exports.updateJob = async (req, res) => {
+  try {
+    const { title, description, requirements, location } = req.body;
+    const job = await Job.findById(req.params.jobId);
+    
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    job.title = title || job.title;
+    job.description = description || job.description;
+    job.requirements = requirements ? requirements.split(",") : job.requirements;
+    job.location = location || job.location;
+
+    await job.save();
+    res.json({ message: "Job updated successfully", job });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating job", error });
+  }
+};
+
+exports.deleteJob = async (req, res) => {
+  try {
+    const job = await Job.findByIdAndDelete(req.params.jobId);
+    if (!job) return res.status(404).json({ message: "Job not found" });
+
+    res.json({ message: "Job deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting job", error });
+  }
+};
