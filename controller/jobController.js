@@ -81,7 +81,18 @@ exports.uploadHospitalLogo = async (req, res) => {
 
 exports.getAllJobs = async (req, res) => {
   try {
-    const jobs = await Job.find().populate("hospital", "name logo location");
+    const {search} = req.query;
+    let query = {};
+    if (search) {
+      query = {
+        $or:[
+          {hospital:{$regex:search, $option: "i"}},
+          {title:{$regex:search,$option: "i"}},
+          {description:{$regex: search, $option: "i"}}
+        ]
+      }
+    }
+    const jobs = await Job.find(query).populate("hospital", "name logo location");
     res.json(jobs);
   } catch (error) {
     res.status(500).json({ message: "Error fetching jobs", error });
