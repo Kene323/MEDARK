@@ -17,3 +17,13 @@ const authMiddleware = (req, res, next) => {
 };
 
 module.exports = authMiddleware;
+
+
+
+// "hospital": "Grace",
+// "title": "dentists",
+// "description":"grace1234",
+// "requirements":"cv",
+// "targetedProfession": "Doctor",
+// "location": "Apapa",
+// "jobType": "Full time"

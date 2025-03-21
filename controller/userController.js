@@ -1,28 +1,37 @@
 const User = require("../model/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { verify } = require("./mailer");
 require("dotenv").config();
 
-//  Register a New User
+
+// create user
 exports.register = async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
 
-    // Check if the user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+    const checkEmail = await User.findOne({ email });
+    if (checkEmail)
+      return res.status(400).json({ message: "Email already exist" });
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashPassword = await bcrypt.hash(password, 10);
+    const verificationToken = await crypto.randomBytes(32).toString("hex");
 
-    // Create a new user
-    const newUser = await User.create({ fullName, email, password: hashedPassword });
-
-    res.status(201).json({ message: "User registered successfully!", data: newUser });
+    const newUser = await User.create({
+      fullName,
+      email,
+      password: hashPassword,
+      verificationToken,
+    });
+    await newUser.save();
+    await verify(email, verificationToken);
+    return res
+      .status(200)
+      .json({ message: "User created!, verify your email to login" });
   } catch (error) {
-    res.status(500).json({ message: "Error registering user", error });
+    console.log(error);
+    return res.status(500).json({ message: "An error occurred" });
   }
 };
 
@@ -36,13 +45,21 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
+    user.isVerified = true;
+    await user.save();
+
     // Generate JWT Token
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN || "1d",
-    });
+    const token = jwt.sign(
+      { id: user._id, email: user.email, isVerified: user.isVerified  },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN || "1d",
+      }
+    );
 
     res.json({ message: "Login successful", token, user });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: "Error logging in", error });
   }
 };
@@ -87,13 +104,13 @@ exports.deleteUser = async (req, res) => {
 };
 
 exports.getPublicStaff = async (req, res) => {
-    try {
-      const staff = await User.find({ isVerified: true })
-        .select("fullName email profile") // Select only public fields
-        .populate("profile");
-  
-      res.json({ message: "Staff retrieved successfully", data: staff });
-    } catch (error) {
-      res.status(500).json({ message: "Error fetching staff", error });
-    }
-  };
+  try {
+    const staff = await User.find({ isVerified: true })
+      .select("fullName email profile") // Select only public fields
+      .populate("profile");
+
+    res.json({ message: "Staff retrieved successfully", data: staff });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching staff", error });
+  }
+};

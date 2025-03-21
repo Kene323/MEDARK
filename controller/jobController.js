@@ -88,6 +88,17 @@ exports.getAllJobs = async (req, res) => {
   }
 };
 
+exports.getJobsForYou = async (req, res) => {
+  try {
+    const {profession} = req.params;
+    const jobs =  await Job.find({targetProfession: profession}).populate("hospital")
+    res.status(200).json(jobs)
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({Message: "Error Fetching Jobs", error})
+  }
+}
+
 exports.getJobById = async (req, res) => {
   try {
     const job = await Job.findById(req.params.jobId).populate("hospital", "name logo location");
