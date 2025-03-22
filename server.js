@@ -1,5 +1,6 @@
 const express = require("express")
 const db = require("./config/db")
+const cors = require("cors")
 const userRoutes = require("./routes/userRoutes")
 const jobApplicationrouter = require("./routes/JobApplicationRoutes")
 const jobRouter = require("./routes/jobRoutes")
@@ -18,10 +19,14 @@ const {PORT} = process.env
 const port = PORT
 
 const app = express()
-app.use(cors());
-db()
 
-app.use(express.json())
+app.use(cors({
+    url:" http://localhost:5173/",
+    methods:["GET", "PUT", "POST", "PATCH"],
+    credentials:true
+}))
+db()
+app.use(express.json());
 
 app.use("/api/users", userRoutes);
 app.use("/api/jobApplication", jobApplicationrouter);

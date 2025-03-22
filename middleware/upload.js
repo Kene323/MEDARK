@@ -22,7 +22,9 @@ const storage = new CloudinaryStorage({
 
     return {
       folder,
-      format: "png",
+      format: ["png","jpg",
+        "jpeg"
+      ],
       public_id: `${file.fieldname}-${Date.now()}`,
     };
   },

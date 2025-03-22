@@ -27,10 +27,7 @@ const JobSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    logo: {
-      type: String, // Cloudinary or any image URL
-      default: null,
-    },
+   
     jobType: {
       type: String,
       required: true,
