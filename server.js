@@ -14,11 +14,11 @@ const cors = require("cors");
 
 
 
-app.use(cors());
 const {PORT} = process.env
 const port = PORT
 
 const app = express()
+app.use(cors());
 db()
 
 app.use(express.json())
