@@ -9,9 +9,12 @@ const verificationRouter = require("./routes/verificationRoutes")
 const adminRouter = require("./routes/adminRoute")
 const hospitalProfileRouter = require("./routes/hopitalProfileRoute")
 const hospitalVerificatioRouter = require("./routes/hospitalVerificationRoute")
+const cors = require("cors");
 
 
 
+
+app.use(cors());
 const {PORT} = process.env
 const port = PORT
 
