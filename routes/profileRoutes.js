@@ -18,9 +18,12 @@ const profileRouter = express.Router();
 
 // Create or Update Profile (Uploads profile picture & resume if provided)
 profileRouter.post(
-  "/",
+  "/createUpdateProfile",
   authMiddleware,
-  upload.fields([{ name: "profilePicture" }, { name: "resume" }]),
+  upload.fields([
+    { name: "profilePicture", maxCount: 1 },
+    { name: "resume", maxCount: 1 },
+  ]),
   createOrUpdateProfile
 );
 
@@ -41,11 +44,11 @@ profileRouter.post(
 );
 
 // Get profile by user ID
-profileRouter.get("/:userId", authMiddleware, getProfile);
+profileRouter.get("/getProfile", authMiddleware, getProfile);
 
 
 
 // Get all profiles (Public access)
-profileRouter.get("/", getAllProfiles);
+profileRouter.get("/allProfile", getAllProfiles);
 
 module.exports = profileRouter;

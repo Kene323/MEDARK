@@ -21,7 +21,7 @@ const port = PORT
 const app = express()
 
 app.use(cors({
-    url:" http://localhost:5173/",
+    url:" http://localhost:5174/",
     methods:["GET", "PUT", "POST", "PATCH"],
     credentials:true
 }))
