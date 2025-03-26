@@ -22,7 +22,7 @@ const storage = new CloudinaryStorage({
 
     return {
       folder,
-      format: "png",
+      resource_type: file.mimetype.startsWith("image/") ? "image" : "raw", // Allow images & raw files
       public_id: `${file.fieldname}-${Date.now()}`,
     };
   },

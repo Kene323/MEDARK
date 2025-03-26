@@ -16,9 +16,8 @@ const jobRouter = express.Router();
 
 jobRouter.post("/", authMiddleware, createJob);
 jobRouter.post("/upload-logo", authMiddleware, upload.single("hospitalLogo"), uploadHospitalLogo);
-jobRouter.get("/getAllJobs", getAllJobs);
-jobRouter.get("/:jobId", getJobById);
-jobRouter.get("/jobs/profession/:profession", getJobsForYou)
+jobRouter.get("/", getAllJobs);
+jobRouter.get("/oneJob/:jobId", authMiddleware, getJobById);
 jobRouter.put("/:jobId", authMiddleware, updateJob);
 jobRouter.delete("/:jobId", authMiddleware, deleteJob);
 

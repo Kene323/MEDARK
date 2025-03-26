@@ -9,7 +9,10 @@ exports.createOrUpdateProfile = async (req, res) => {
   try {
     const { profession, bio, experience, phone, location } = req.body;
 
-    // Get uploaded files (if any)
+    console.log("Received Data:", req.body);
+    console.log("Received Files:", req.files);
+
+    // Get uploaded file URLs from Cloudinary
     const profilePicture = req.files?.profilePicture ? req.files.profilePicture[0].path : null;
     const resume = req.files?.resume ? req.files.resume[0].path : null;
 
@@ -40,12 +43,12 @@ exports.createOrUpdateProfile = async (req, res) => {
       profilePicture,
       resume,
     });
-    console.log("Received Profession:", req.body.profession);
 
     await profile.save();
     res.status(201).json({ message: "Profile created successfully", data: profile });
   } catch (error) {
-    res.status(500).json({ message: "Error saving profile", error:error.message });
+    console.error("Error:", error); // Log the actual error
+    res.status(500).json({ message: "Error saving profile", error: error.message });
   }
 };
 
@@ -70,7 +73,8 @@ exports.getAllProfiles = async (req, res) => {
  */
 exports.getProfile = async (req, res) => {
   try {
-    const profile = await Profile.findOne({ user: req.params.userId });
+    const userId = req.user.id
+    const profile = await Profile.findOne({ user: userId });
     if (!profile) return res.status(404).json({ message: "Profile not found" });
     res.json(profile);
   } catch (error) {

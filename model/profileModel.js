@@ -5,10 +5,10 @@ const profileSchema = new mongoose.Schema({
   profession: { 
     type: String, 
     required: true, 
-    enum: [
-      "Doctor", "Pharmacist", "Nurse", "Medical Lab Scientist",
-      "Radiographer", "Optometrist", "Community Health Officer"
-    ] 
+    // enum: [
+    //   "Doctor", "Pharmacist", "Nurse", "Medical Lab Scientist",
+    //   "Radiographer", "Optometrist", "Community Health Officer"
+    // ] 
   },
   bio: { type: String },
   experience: { type: Number, default: 0 },

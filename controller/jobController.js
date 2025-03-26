@@ -18,8 +18,7 @@ exports.createJob = async (req, res) => {
       return res.status(404).json({ message: "Hospital not found" });
     }
 
-    // Handle logo upload (if provided)
-    const logo = req.file ? req.file.path : hospital.logo;
+    
 
     // Create job
     const newJob = new Job({
@@ -29,7 +28,6 @@ exports.createJob = async (req, res) => {
       requirements,
       targetProfession,
       location,
-      logo,
       jobType
     });
 
