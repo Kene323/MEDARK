@@ -30,5 +30,4 @@ const verificationSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const Verification = mongoose.model("Verification", verificationSchema);
-export default Verification;
+module.exports = mongoose.model("Verification", verificationSchema);
