@@ -18,10 +18,10 @@ const {PORT} = process.env
 const port = PORT
 
 const app = express()
-app.use(cors());
 db()
 
 app.use(express.json())
+app.use(cors());
 
 app.use("/api/users", userRoutes);
 app.use("/api/jobApplication", jobApplicationrouter);
